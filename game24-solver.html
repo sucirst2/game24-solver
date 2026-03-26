@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="writer" content="Sucirst & his friends">
+    <title>24点计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family:  sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .example-text {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 200px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .result-title {
+            font-size: 1.3em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .result-count {
+            background: #667eea;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .solution-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .solution-item {
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-size: 18px;
+            color: #333;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .solution-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+            font-size: 18px;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1976d2;
+            font-size: 14px;
+        }
+
+        /* 滚动条样式 */
+        .solution-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .solution-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .solution-list::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .solution-list::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 24点计算器</h1>
+
+        <div class="input-section">
+            <div class="info-box">
+                💡 输入4个数字，支持任意分隔符：空格、逗号、分号、句号等
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="numberInput" placeholder="例如：1 6 11 13 或 1,6,11,13">
+                <button class="btn btn-primary" onclick="solve24()">计算</button>
+                <button class="btn btn-clear" onclick="clearInput()">清除</button>
+            </div>
+
+            <p class="example-text">支持格式：1 6 11 13 | 1,6,11,13 | 1;6;11;13 | 1.6.11.13 | 1:6:11:13</p>
+        </div>
+
+        <div class="result-section">
+            <div class="result-header">
+                <span class="result-title" id="resultTitle">等待输入...</span>
+                <span class="result-count" id="resultCount" style="display: none;">0 个解法</span>
+            </div>
+
+            <div id="errorContainer"></div>
+            <div id="solutionContainer" class="solution-list">
+                <div class="empty-state">
+                    请输入四个数字，点击"计算"查看结果
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function parseNumbers(inputStr) {
+            // 使用正则表达式提取所有数字
+            const numbers = inputStr.match(/-?\d+\.?\d*/g);
+            if (!numbers) return [];
+            return numbers.map(num => parseInt(num, 10));
+        }
+
+        function operate(a, b, op) {
+            switch (op) {
+                case '+':
+                    return a + b;
+                case '-':
+                    return a - b;
+                case '*':
+                    return a * b;
+                case '/':
+                    if (Math.abs(b) < 0.0001) {
+                        throw new Error('Division by zero');
+                    }
+                    return a / b;
+                default:
+                    throw new Error('Invalid operator');
+            }
+        }
+
+        function* generatePermutations(arr) {
+            if (arr.length <= 1) yield arr;
+            else {
+                for (let i = 0; i < arr.length; i++) {
+                    const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+                    for (const perm of generatePermutations(rest)) {
+                        yield [arr[i], ...perm];
+                    }
+                }
+            }
+        }
+
+        function* generateProducts(arr, repeat) {
+            if (repeat === 0) yield [];
+            else {
+                for (const item of arr) {
+                    for (const rest of generateProducts(arr, repeat - 1)) {
+                        yield [item, ...rest];
+                    }
+                }
+            }
+        }
+
+        function solve24() {
+            const inputStr = document.getElementById('numberInput').value.trim();
+            const errorContainer = document.getElementById('errorContainer');
+            const solutionContainer = document.getElementById('solutionContainer');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultCount = document.getElementById('resultCount');
+
+            // 清除之前的错误和结果
+            errorContainer.innerHTML = '';
+            solutionContainer.innerHTML = '';
+
+            // 解析输入
+            const nums = parseNumbers(inputStr);
+
+            // 验证输入
+            if (nums.length !== 4) {
+                errorContainer.innerHTML = `
+                    <div class="error-message">
+                        ❌ 检测到 ${nums.length} 个数字，请确保输入恰好四个数字！
+                    </div>
+                `;
+                resultTitle.textContent = '输入错误';
+                resultCount.style.display = 'none';
+                return;
+            }
+
+            // 检查数字是否重复（可选）
+            const uniqueNums = new Set(nums);
+            if (uniqueNums.size === 1) {
+                errorContainer.innerHTML = `
+                    <div class="error-message">
+                        ⚠️ 提示：四个数字相同，可能无解（如 4 4 4 4）
+                    </div>
+                `;
+            }
+
+            const ops = ['+', '-', '*', '/'];
+            const solutions = new Set();
+
+            // 生成所有数字排列和运算符组合
+            for (const numPerm of generatePermutations(nums)) {
+                for (const opPerm of generateProducts(ops, 3)) {
+                    // 1. ((a op b) op c) op d
+                    try {
+                        const val1 = operate(numPerm[0], numPerm[1], opPerm[0]);
+                        const val2 = operate(val1, numPerm[2], opPerm[1]);
+                        const val3 = operate(val2, numPerm[3], opPerm[2]);
+                        if (Math.abs(val3 - 24) < 0.0001) {
+                            solutions.add(`((${numPerm[0]} ${opPerm[0]} ${numPerm[1]}) ${opPerm[1]} ${numPerm[2]}) ${opPerm[2]} ${numPerm[3]} = 24`);
+                        }
+                    } catch (e) {}
+
+                    // 2. (a op b) op (c op d)
+                    try {
+                        const val1 = operate(numPerm[0], numPerm[1], opPerm[0]);
+                        const val2 = operate(numPerm[2], numPerm[3], opPerm[1]);
+                        const val3 = operate(val1, val2, opPerm[2]);
+                        if (Math.abs(val3 - 24) < 0.0001) {
+                            solutions.add(`(${numPerm[0]} ${opPerm[0]} ${numPerm[1]}) ${opPerm[2]} (${numPerm[2]} ${opPerm[1]} ${numPerm[3]}) = 24`);
+                        }
+                    } catch (e) {}
+
+                    // 3. (a op (b op c)) op d
+                    try {
+                        const val1 = operate(numPerm[1], numPerm[2], opPerm[1]);
+                        const val2 = operate(numPerm[0], val1, opPerm[0]);
+                        const val3 = operate(val2, numPerm[3], opPerm[2]);
+                        if (Math.abs(val3 - 24) < 0.0001) {
+                            solutions.add(`(${numPerm[0]} ${opPerm[0]} (${numPerm[1]} ${opPerm[1]} ${numPerm[2]})) ${opPerm[2]} ${numPerm[3]} = 24`);
+                        }
+                    } catch (e) {}
+
+                    // 4. a op ((b op c) op d)
+                    try {
+                        const val1 = operate(numPerm[1], numPerm[2], opPerm[1]);
+                        const val2 = operate(val1, numPerm[3], opPerm[2]);
+                        const val3 = operate(numPerm[0], val2, opPerm[0]);
+                        if (Math.abs(val3 - 24) < 0.0001) {
+                            solutions.add(`${numPerm[0]} ${opPerm[0]} ((${numPerm[1]} ${opPerm[1]} ${numPerm[2]}) ${opPerm[2]} ${numPerm[3]}) = 24`);
+                        }
+                    } catch (e) {}
+
+                    // 5. a op (b op (c op d))
+                    try {
+                        const val1 = operate(numPerm[2], numPerm[3], opPerm[2]);
+                        const val2 = operate(numPerm[1], val1, opPerm[1]);
+                        const val3 = operate(numPerm[0], val2, opPerm[0]);
+                        if (Math.abs(val3 - 24) < 0.0001) {
+                            solutions.add(`${numPerm[0]} ${opPerm[0]} (${numPerm[1]} ${opPerm[1]} (${numPerm[2]} ${opPerm[2]} ${numPerm[3]})) = 24`);
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            // 显示结果
+            const sortedSolutions = Array.from(solutions).sort();
+
+            if (sortedSolutions.length > 0) {
+                resultTitle.textContent = `计算结果：数字 [${nums.join(', ')}]`;
+                resultCount.style.display = 'block';
+                resultCount.textContent = `${sortedSolutions.length} 个解法`;
+
+                sortedSolutions.forEach((solution, index) => {
+                    const solutionDiv = document.createElement('div');
+                    solutionDiv.className = 'solution-item';
+                    solutionDiv.textContent = solution;
+                    solutionContainer.appendChild(solutionDiv);
+                });
+            } else {
+                resultTitle.textContent = '计算结果';
+                resultCount.style.display = 'block';
+                resultCount.textContent = '无解';
+                solutionContainer.innerHTML = `
+                    <div class="empty-state">
+                        😢 使用数字 [${nums.join(', ')}] 无法计算出 24<br>
+                        尝试其他数字组合吧！
+                    </div>
+                `;
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('numberInput').value = '';
+            document.getElementById('errorContainer').innerHTML = '';
+            document.getElementById('solutionContainer').innerHTML = `
+                <div class="empty-state">
+                    请输入四个数字，点击"计算"查看结果
+                </div>
+            `;
+            document.getElementById('resultTitle').textContent = '等待输入...';
+            document.getElementById('resultCount').style.display = 'none';
+            document.getElementById('numberInput').focus();
+        }
+
+        // 回车键触发计算
+        document.getElementById('numberInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                solve24();
+            }
+        });
+
+        // 页面加载后自动聚焦输入框
+        window.onload = function() {
+            document.getElementById('numberInput').focus();
+        };
+    </script>
+</body>
+</html>
